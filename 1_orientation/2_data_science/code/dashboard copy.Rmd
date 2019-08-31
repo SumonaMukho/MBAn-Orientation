@@ -1,0 +1,122 @@
+---
+title: "Day 1 mini-project"
+author: "By Anonymous Analyst Extraordinaire"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+    theme: united
+---
+
+```{r}
+
+# INSTRUCTIONS
+
+# You are a seasoned data scientist who has just arrived in Boston. You're looking to go see the sights, but you don't know where they are! Instead of buying a tourist guide like a Muggle, you are going to use your skills in exploratory data analysis and visualization to identify some of the cool spots to visit. 
+
+# Working with your partner, conduct analyses to identify at least THREE cool spots that you want to check out. Use the dashboard format to communicate your findings. You can check e.g. on Google to confirm your findings, but you should include clear commentary indicating how your analysis supports your findings. I've included some of the code from the script we worked on together to help you get started. 
+
+```
+
+```{r}
+# You may find the following resources useful: 
+# - Your team member(s)! 
+# - Data wrangling [cheatsheet](https://www.rstudio.com/wp-content/uploads/2015/02/data-wrangling-cheatsheet.pdf), 
+# - `R` graphics [cheatsheet](https://www.rstudio.com/wp-content/uploads/2015/03/ggplot2-cheatsheet.pdf), 
+# - [`R` Graphics Cookbook](http://www.cookbook-r.com/Graphs/)
+# - [RMarkdown Cheatsheet](https://www.rstudio.com/wp-content/uploads/2015/02/rmarkdown-cheatsheet.pdf)
+```
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(tidyverse)
+library(lubridate)
+```
+
+```{r data_prep}
+# put your data preparation code here. To get you started, the data preparation we performed in the session previously has already been pasted in. Feel free to add any additional data preparation code needed for your visualizations
+
+listings <- read_csv('../../data/listings.csv')
+calendar <- read_csv('../../data/calendar.csv')
+coords <- read_csv('coordinates of top ratios.csv')
+
+source("clean_prices.R")
+listings <- clean_prices(listings)
+calendar <- clean_prices(calendar)
+```
+
+# A First Tab
+
+Column {data-width=650}
+-----------------------------------------------------------------------
+
+### A map! 
+
+```{r box_1}
+
+library(ggmap)
+
+boston_coords <- c(left   = -71.1289, 
+				   bottom = 42.3201, 
+				   right  = -71.0189, 
+				   top    = 42.3701)
+
+basemap <- get_map(location = boston_coords,
+				maptype = 'terrain')
+
+ggmap(basemap) + 
+	geom_point(aes(x = longitude, y = latitude, color=neighbourhood, size = accommodates), 
+			   data = coords) +
+  xlab("Longitude") +
+  ylab("Latitude") 
+
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Box 2
+
+Frequently, visualization for decision-makers are most useful when accompanied by analysis, interpretation, and sometimes a recommendation by the analyst. Feel free to fill in your own commentary on your visualizations in this box or the one below. You can leave the `R` code chunk blank for your commentary box. 
+
+```{r box_2}
+
+```
+
+### A different visualization! 
+
+```{r box_3}
+# Put the code for a supporting visualization here. This visualization should add context and nuance, but expect the main visualization to convey the bulk of your message. 
+
+# This is not a good visualization -- always remember to include titles and legends. Make yours better! 
+
+neighbourhood_lookup <- listings %>% 
+	select(id, neighbourhood)
+
+calendar %>% 
+	left_join(neighbourhood_lookup, by = c('listing_id' = 'id')) %>% 
+	group_by(neighbourhood, date) %>% 
+	summarise(price = mean(price), n = n()) %>% 
+	filter(n > 100) %>%
+	ggplot() +
+	aes(x = date, y = price, color = neighbourhood) + 
+	geom_line() + 
+	guides(color = FALSE)
+```
+
+
+# A Second Tab
+
+
+Column {data-width=650}
+-----------------------------------------------------------------------
+
+### Box 1
+
+Your dashboard is allowed to have multiple tabs! Only use it if you need it. 
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Box 2
+
